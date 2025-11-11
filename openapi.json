@@ -74,7 +74,8 @@
                 "type": "object",
                 "properties": {
                   "email": { "type": "string" },
-                  "password": { "type": "string" }
+                  "password": { "type": "string" },
+                  "username": { "type": "string", "description": "Opsiyonel kullanıcı adı" }
                 },
                 "required": ["email", "password"]
               }
@@ -234,19 +235,47 @@
     },
     "/api/restaurants/add": {
       "post": {
-        "summary": "Yeni restoran oluştur (auth gerekir)",
+        "summary": "Yeni restoran oluştur (auth opsiyonel)",
         "responses": {
           "201": { "description": "Restoran oluşturuldu" },
-          "401": { "description": "Yetkisiz" }
+          "401": { "description": "Yetkisiz (kullanılmıyor)" }
         }
       }
     },
     "/api/restaurants": {
       "get": {
-        "summary": "Kullanıcının restoranlarını listele (auth gerekir)",
+        "summary": "Restoranları listele (login ise sadece sahibine ait olanlar)",
         "responses": {
           "200": { "description": "Liste döner" },
-          "401": { "description": "Yetkisiz" }
+          "401": { "description": "Yetkisiz (kullanılmıyor)" }
+        }
+      }
+    },
+    "/api/restaurants/user/{username}": {
+      "get": {
+        "summary": "Belirli kullanıcı adına (username) ait restoranları listele",
+        "parameters": [
+          {
+            "name": "username",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Kullanıcıya ait restoran listesi",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object"
+                  }
+                }
+              }
+            }
+          }
         }
       }
     }

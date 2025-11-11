@@ -1,35 +1,52 @@
-// backend/routes/restaurants.js - DAHA AKILLI HATA YÖNETİMİ
 const express = require('express');
 const router = express.Router();
 const Restaurant = require('../models/Restaurant');
-const isAuth = require('../middleware/isAuth');
 
-// Yeni restoran oluşturma
-router.post('/add', isAuth, async (req, res) => {
+// Yeni restoran oluşturma (auth zorunlu değil)
+router.post('/add', async (req, res) => {
   try {
     const { name } = req.body;
-    const newRestaurant = new Restaurant({ name, owner: req.session.userId });
+    const newRestaurant = new Restaurant({ name });
+    if (req.session && req.session.userId) {
+      newRestaurant.owner = req.session.userId;
+    }
     await newRestaurant.save();
     res.status(201).json(newRestaurant);
   } catch (error) {
-    // DEĞİŞİKLİK BURADA: Hatanın türünü kontrol ediyoruz
-    // Eğer hata, MongoDB'nin "duplicate key" (zaten var) hatasıysa (kod 11000),
-    // o zaman spesifik bir mesaj gönderiyoruz.
     if (error.code === 11000) {
-      return res.status(409).json({ message: 'Bu isimde bir restoranınız zaten mevcut.' }); // 409 Conflict daha doğru bir koddur.
+      return res.status(409).json({ message: 'Bu isimde bir restoran zaten mevcut.' });
     }
-    // Diğer tüm hatalar için genel bir sunucu hatası mesajı gönderiyoruz.
-    console.error("Restoran ekleme hatası:", error); // Hatayı terminale yazdırarak ne olduğunu anlarız.
+    console.error("Restoran ekleme hatası:", error);
     res.status(500).json({ message: 'Restoran oluşturulurken bir sunucu hatası oluştu.' });
   }
 });
 
-// Giriş yapan kullanıcıya ait restoranları listeleme
-router.get('/', isAuth, async (req, res) => {
+// Restoranları listeleme (auth zorunlu değil; login ise sadece sahibine ait olanlar)
+router.get('/', async (req, res) => {
   try {
-    const restaurants = await Restaurant.find({ owner: req.session.userId });
+    let query = {};
+    if (req.session && req.session.userId) {
+      query.owner = req.session.userId;
+    }
+    const restaurants = await Restaurant.find(query);
     res.status(200).json(restaurants);
   } catch (error) {
+    res.status(500).json({ message: 'Restoranlar listelenirken hata oluştu.' });
+  }
+});
+
+// Belirli bir kullanıcı adına (username) ait restoranları listeleme
+router.get('/user/:username', async (req, res) => {
+  try {
+    const User = require('../models/User');
+    const user = await User.findOne({ username: req.params.username.toLowerCase().trim() });
+    if (!user) {
+      return res.status(200).json([]); // kullanıcı yoksa boş liste dön
+    }
+    const restaurants = await Restaurant.find({ owner: user._id });
+    res.status(200).json(restaurants);
+  } catch (error) {
+    console.error("Kullanıcı adına göre restoran listeleme hatası:", error);
     res.status(500).json({ message: 'Restoranlar listelenirken hata oluştu.' });
   }
 });

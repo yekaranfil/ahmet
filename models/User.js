@@ -10,11 +10,20 @@ const UserSchema = new mongoose.Schema({
     trim: true,
     lowercase: true,
   },
+  username: {
+    type: String,
+    required: false,
+    trim: true,
+    lowercase: true
+  },
   password: {
     type: String,
     required: true,
   }
 });
+
+// username için opsiyonel benzersizlik (yalnızca varsa kontrol et)
+UserSchema.index({ username: 1 }, { unique: true, sparse: true });
 
 // Kullanıcıyı veritabanına kaydetmeden HEMEN ÖNCE bu fonksiyon çalışacak
 UserSchema.pre('save', async function (next) {

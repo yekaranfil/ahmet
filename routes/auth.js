@@ -7,20 +7,24 @@ const User = require('../models/User');
 // KULLANICI KAYDI (REGISTER)
 // POST: /api/auth/register
 router.post('/register', async (req, res) => {
-  const { email, password } = req.body;
+  const { email, password, username } = req.body;
   try {
     let user = await User.findOne({ email });
     if (user) {
       return res.status(400).json({ message: 'Bu email adresi zaten kullanılıyor.' });
     }
-    user = new User({ email, password });
+    // username opsiyonel; varsa set et
+    user = new User({ email, password, ...(username ? { username } : {}) });
     await user.save();
 
     // Kullanıcıyı kaydettikten sonra otomatik olarak oturum açtır
     req.session.userId = user.id;
-    res.status(201).json({ id: user.id, email: user.email });
+    res.status(201).json({ id: user.id, email: user.email, username: user.username });
 
   } catch (error) {
+    if (error.code === 11000 && error.keyPattern && error.keyPattern.username) {
+      return res.status(400).json({ message: 'Bu kullanıcı adı zaten alınmış.' });
+    }
     res.status(500).send('Sunucu Hatası');
   }
 });

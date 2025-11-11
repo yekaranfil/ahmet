@@ -10,7 +10,7 @@ const RestaurantSchema = new mongoose.Schema({
   // YENİ EKLENDİ: Bu restoranın sahibinin ID'sini burada tutacağız.
   owner: {
     type: mongoose.Schema.Types.ObjectId,
-    required: true,
+    required: false,
     ref: 'User' // Bu ID'nin User modeline ait olduğunu belirtir.
   }
 }, {
