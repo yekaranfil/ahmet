@@ -36,25 +36,14 @@ router.get('/', async (req, res) => {
   }
 });
 
-// Belirli bir kullanıcı adına (username) veya userId'ye ait restoranları listeleme
-router.get('/user/:username', async (req, res) => {
+// Belirli bir userId'ye ait restoranları listeleme
+router.get('/user/:userId', async (req, res) => {
   try {
-    const User = require('../models/User');
-    const rawParam = (req.params.username || '').toString().trim();
-
-    // Eğer geçerli bir ObjectId ise doğrudan owner üzerinden ara
-    if (mongoose.Types.ObjectId.isValid(rawParam)) {
-      const restaurantsById = await Restaurant.find({ owner: rawParam });
-      return res.status(200).json(restaurantsById);
+    const userId = (req.params.userId || '').toString().trim();
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return res.status(400).json({ message: 'Geçersiz userId.' });
     }
-
-    // Değilse, username olarak kabul et
-    const username = rawParam.toLowerCase();
-    const user = await User.findOne({ username });
-    if (!user) {
-      return res.status(200).json([]); // kullanıcı yoksa boş liste dön
-    }
-    const restaurants = await Restaurant.find({ owner: user._id });
+    const restaurants = await Restaurant.find({ owner: userId });
     res.status(200).json(restaurants);
   } catch (error) {
     console.error("Kullanıcı adına göre restoran listeleme hatası:", error);
