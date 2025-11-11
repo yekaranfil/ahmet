@@ -236,6 +236,21 @@
     "/api/restaurants/add": {
       "post": {
         "summary": "Yeni restoran oluştur (auth opsiyonel)",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string" },
+                  "ownerId": { "type": "string", "description": "User ID (opsiyonel). Gönderilirse restoran bu kullanıcıya atanır." }
+                },
+                "required": ["name"]
+              }
+            }
+          }
+        },
         "responses": {
           "201": { "description": "Restoran oluşturuldu" },
           "401": { "description": "Yetkisiz (kullanılmıyor)" }

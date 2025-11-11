@@ -6,9 +6,12 @@ const mongoose = require('mongoose');
 // Yeni restoran oluşturma (auth zorunlu değil)
 router.post('/add', async (req, res) => {
   try {
-    const { name } = req.body;
+    const { name, ownerId } = req.body;
     const newRestaurant = new Restaurant({ name });
-    if (req.session && req.session.userId) {
+    // Öncelik: body'den gelen ownerId (userId)
+    if (ownerId && mongoose.Types.ObjectId.isValid(ownerId)) {
+      newRestaurant.owner = ownerId;
+    } else if (req.session && req.session.userId) {
       newRestaurant.owner = req.session.userId;
     }
     await newRestaurant.save();
