@@ -17,19 +17,15 @@ const swaggerDocument = require('./openapi.json');
 connectDB();
 const app = express();
 
-// Sadece bu adreslerden gelen isteklere izin ver
-const allowedOrigins = [
-  'http://localhost:3000',
-  'https://dijital-menu-projesi-iis9tay75-ahmet-buraks-projects-c6fdec2d.vercel.app'
-];
-
-app.use(cors({
-  origin: function (origin, callback) {
-    if (!origin || allowedOrigins.indexOf(origin) !== -1) { callback(null, true); } 
-    else { callback(new Error('Not allowed by CORS')); }
-  },
-  credentials: true
-}));
+// Tüm origin'lere izin ver (dikkat: güvenlik etkileri vardır)
+const corsOptions = {
+  origin: true, // gelen origin'i yansıt
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+};
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
 
 // Render gibi proxy'lerin (vekil sunucuların) arkasında çalışmak için
 app.set('trust proxy', 1);
