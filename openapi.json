@@ -253,13 +253,14 @@
     },
     "/api/restaurants/user/{username}": {
       "get": {
-        "summary": "Belirli kullanıcı adına (username) ait restoranları listele",
+        "summary": "Belirli kullanıcı adına (username) veya userId'ye ait restoranları listele",
         "parameters": [
           {
             "name": "username",
             "in": "path",
             "required": true,
-            "schema": { "type": "string" }
+            "schema": { "type": "string" },
+            "description": "username veya 24 karakterlik MongoDB userId"
           }
         ],
         "responses": {

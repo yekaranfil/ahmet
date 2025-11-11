@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Restaurant = require('../models/Restaurant');
+const mongoose = require('mongoose');
 
 // Yeni restoran oluşturma (auth zorunlu değil)
 router.post('/add', async (req, res) => {
@@ -35,11 +36,21 @@ router.get('/', async (req, res) => {
   }
 });
 
-// Belirli bir kullanıcı adına (username) ait restoranları listeleme
+// Belirli bir kullanıcı adına (username) veya userId'ye ait restoranları listeleme
 router.get('/user/:username', async (req, res) => {
   try {
     const User = require('../models/User');
-    const user = await User.findOne({ username: req.params.username.toLowerCase().trim() });
+    const rawParam = (req.params.username || '').toString().trim();
+
+    // Eğer geçerli bir ObjectId ise doğrudan owner üzerinden ara
+    if (mongoose.Types.ObjectId.isValid(rawParam)) {
+      const restaurantsById = await Restaurant.find({ owner: rawParam });
+      return res.status(200).json(restaurantsById);
+    }
+
+    // Değilse, username olarak kabul et
+    const username = rawParam.toLowerCase();
+    const user = await User.findOne({ username });
     if (!user) {
       return res.status(200).json([]); // kullanıcı yoksa boş liste dön
     }
