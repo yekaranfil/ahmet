@@ -1,0 +1,296 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Dijital Menü API",
+    "version": "1.0.0",
+    "description": "Dijital menü backend servisleri için OpenAPI dokümantasyonu"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:5000",
+      "description": "Lokal (container içi)"
+    },
+    {
+      "url": "http://localhost:5001",
+      "description": "Lokal (host)"
+    }
+  ],
+  "paths": {
+    "/": {
+      "get": {
+        "summary": "Sağlık kontrolü",
+        "responses": {
+          "200": {
+            "description": "Sunucu çalışıyor mesajı döner"
+          }
+        }
+      }
+    },
+    "/api/upload": {
+      "post": {
+        "summary": "Resim yükleme",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "image": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                },
+                "required": ["image"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Yüklenen resmin URL'i döner",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "secure_url": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/register": {
+      "post": {
+        "summary": "Kullanıcı kaydı",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": { "type": "string" },
+                  "password": { "type": "string" }
+                },
+                "required": ["email", "password"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Kullanıcı oluşturuldu ve login oldu" },
+          "400": { "description": "Email kullanımda" }
+        }
+      }
+    },
+    "/api/auth/login": {
+      "post": {
+        "summary": "Kullanıcı girişi",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": { "type": "string" },
+                  "password": { "type": "string" }
+                },
+                "required": ["email", "password"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Giriş başarılı" },
+          "400": { "description": "Geçersiz bilgiler" }
+        }
+      }
+    },
+    "/api/auth/logout": {
+      "post": {
+        "summary": "Kullanıcı çıkışı",
+        "responses": {
+          "200": { "description": "Çıkış yapıldı" }
+        }
+      }
+    },
+    "/api/auth/check-session": {
+      "get": {
+        "summary": "Oturum kontrolü",
+        "responses": {
+          "200": { "description": "Oturum durumu" }
+        }
+      }
+    },
+    "/api/menu/add": {
+      "post": {
+        "summary": "Yeni menü öğesi oluştur",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/MenuItemCreate" }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Öğe oluşturuldu" }
+        }
+      }
+    },
+    "/api/menu/{restaurantId}": {
+      "get": {
+        "summary": "Restorana ait menü öğelerini listele",
+        "parameters": [
+          {
+            "name": "restaurantId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Menü listesi",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/MenuItem" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/menu/reorder": {
+      "put": {
+        "summary": "Menü öğelerini yeniden sırala",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "orderedIds": {
+                    "type": "array",
+                    "items": { "type": "string" }
+                  }
+                },
+                "required": ["orderedIds"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Sıralama güncellendi" }
+        }
+      }
+    },
+    "/api/menu/{itemId}": {
+      "put": {
+        "summary": "Menü öğesini güncelle",
+        "parameters": [
+          {
+            "name": "itemId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/MenuItemUpdate" }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Güncellendi" }
+        }
+      },
+      "delete": {
+        "summary": "Menü öğesini sil",
+        "parameters": [
+          {
+            "name": "itemId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Silindi" }
+        }
+      }
+    },
+    "/api/restaurants/add": {
+      "post": {
+        "summary": "Yeni restoran oluştur (auth gerekir)",
+        "responses": {
+          "201": { "description": "Restoran oluşturuldu" },
+          "401": { "description": "Yetkisiz" }
+        }
+      }
+    },
+    "/api/restaurants": {
+      "get": {
+        "summary": "Kullanıcının restoranlarını listele (auth gerekir)",
+        "responses": {
+          "200": { "description": "Liste döner" },
+          "401": { "description": "Yetkisiz" }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "MenuItem": {
+        "type": "object",
+        "properties": {
+          "_id": { "type": "string" },
+          "name": { "type": "string" },
+          "description": { "type": "string" },
+          "price": { "type": "number" },
+          "category": { "type": "string" },
+          "restaurantId": { "type": "string" },
+          "imageUrl": { "type": "string" },
+          "order": { "type": "integer" }
+        }
+      },
+      "MenuItemCreate": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string" },
+          "description": { "type": "string" },
+          "price": { "type": "number" },
+          "category": { "type": "string" },
+          "restaurantId": { "type": "string" },
+          "imageUrl": { "type": "string" }
+        },
+        "required": ["name", "price", "restaurantId"]
+      },
+      "MenuItemUpdate": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string" },
+          "description": { "type": "string" },
+          "price": { "type": "number" },
+          "category": { "type": "string" },
+          "imageUrl": { "type": "string" },
+          "order": { "type": "integer" }
+        }
+      }
+    }
+  }
+}
+
+

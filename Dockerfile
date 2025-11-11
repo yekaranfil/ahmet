@@ -4,7 +4,7 @@ WORKDIR /app
 
 # Bağımlılıkları önbellek dostu kurulum
 COPY package*.json ./
-RUN npm ci --only=production
+RUN npm install --omit=dev
 
 # Uygulama kodunu kopyala
 COPY . .

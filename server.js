@@ -11,6 +11,8 @@ const uploadCloud = require('./config/cloudinary');
 const menuRoutes = require('./routes/menu');
 const restaurantRoutes = require('./routes/restaurants');
 const authRoutes = require('./routes/auth');
+const swaggerUi = require('swagger-ui-express');
+const swaggerDocument = require('./openapi.json');
 
 connectDB();
 const app = express();
@@ -59,6 +61,7 @@ app.post('/api/upload', uploadCloud.single('image'), (req, res) => {
   res.status(200).json({ secure_url: req.file.path });
 });
 app.get('/', (req, res) => res.send('Dijital Menü Backend Sunucusu Çalışıyor!'));
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.use('/api/auth', authRoutes);
 app.use('/api/menu', menuRoutes);
 app.use('/api/restaurants', restaurantRoutes);
