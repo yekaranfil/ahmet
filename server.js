@@ -25,7 +25,7 @@ const corsOptions = {
   allowedHeaders: ['Content-Type', 'Authorization']
 };
 app.use(cors(corsOptions));
-app.options('*', cors(corsOptions));
+app.options(/.*/, cors(corsOptions));
 
 // Render gibi proxy'lerin (vekil sunucuların) arkasında çalışmak için
 app.set('trust proxy', 1);
